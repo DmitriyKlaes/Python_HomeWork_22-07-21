@@ -1,61 +1,83 @@
-# Даны два файла, в каждом из которых находится запись многочлена. 
+# Даны два файла, в каждом из которых находится запись многочлена.
 # Задача - сформировать файл, содержащий сумму многочленов.
-
+    
+    
 def import_file(name):
     with open(name, 'r') as file_1:
-        return [i for i in file_1.read().split()]
+        polinomial = [i for i in file_1.read().replace('^', '').split()]
+        count = 0
+        for i in polinomial:
+            if i == '-' and polinomial[count + 1][0] == 'x':
+                polinomial[count + 1] = polinomial[count] + '1' + polinomial[count + 1]
+            if i == '-' and polinomial[count + 1][0].isdigit():
+                polinomial[count + 1] = polinomial[count] + polinomial[count + 1]
+            if i == '+' or i == '-':
+                polinomial.pop(count)
+            count += 1
+        return polinomial
+    
+    
+def export_file(pol):
+    with open('task000-polinomial_sum.txt', 'w') as file:
+        file.write(pol)
 
-def coeff_symbol(pol):
-    count = 0
+
+def dict_from_polinomial(pol):
+    result_dict = {}
     for i in pol:
-        if i == '-' or i == '+':
-            pol[count + 1] = pol[count] + pol[count + 1]
-            pol.pop(count)
-        count += 1
+        if 'x' not in i:
+            i = i + 'x' + '0'
+        if i[i.find('x') + 1:] == '':
+            i = i + '1'
+        if i[:i.find('x')] == '':
+            i = '1' + i
+        elif i[:i.find('x')] == '-':
+            i = i.replace('-x', '-1x')
+        if int(i[i.find('x')+1:]) in result_dict.keys():
+            result_dict[int(i[i.find('x')+1:])] += int(i[0:i.find('x')])
+        else:
+            result_dict[int(i[i.find('x')+1:])] = int(i[0:i.find('x')])
+    return result_dict
 
-def get_dict(pol):
-    for i in range(len(pol)):
-        pol[i] = list(reversed(pol[i].replace('^', '').partition("x")))
-        if pol[i][1] == 'x' and pol[i][0] == '':
-            pol[i][0] = 1
-        if pol[i][1] == '' and pol[i][0] == '':
-            pol[i][0] = 0
-        pol[i].pop(1)
-        pol[i] = list(map(int, pol[i]))
-    return dict(pol)
 
 def summ_pol(dict1, dict2):
-    max_dict = {}
-    min_dict = {}
     result = {}
-    if len(dict1) > len(dict2):
-        max_dict, min_dict = dict1, dict2
+    if max(dict1.keys()) > max(dict2.keys()):
+        max_coef = max(dict1.keys())
     else:
-        max_dict, min_dict = dict2, dict1   
-    for i in range(len(max_dict)+(len(max_dict)-len(min_dict)) -1, -1, -1):
-        if i in min_dict.keys() and i not in max_dict.keys():
-            result[i] = min_dict[i]
-        else:
-            result[i] = (max_dict[i] if i in max_dict else 0) + (min_dict[i] if i in min_dict else 0)
+        max_coef = max(dict2.keys())
+    for i in range(max_coef, -1, -1):
+        if i in dict1.keys() or i in dict2.keys():
+            result[i] = (dict1[i] if i in dict1.keys() else 0) + (dict2[i] if i in dict2.keys() else 0)
+            if result[i] == 0:
+                del result[i]
     return result
 
-def simple_polynomial(dict):
-    result = ' '
-    pow = len(dict) - 1
-    while pow >= 0:
-        if pow > 1: result = result + str(dict[pow] if pow in dict else 0) + 'x^' + str(pow)
-        if pow == 1: result = result + str(dict[pow] if pow in dict else 0) + 'x'
-        if pow == 0: result = result + str(dict[pow] if pow in dict else 0)
-        if pow > 0: result = result + ' + '
-        pow -= 1
-    return result.replace(' 1x', ' x').replace(' 0x', ' x').replace('+ 0', '')
+
+def get_polinomial(dict):
+    result = ''  
+    list_keys = sorted(dict.keys(), reverse=True)
+    if not list_keys:
+        return 0
+    for i in list_keys:
+        if i > 1:
+                result = result + str(abs(dict[i]) if list_keys.index(i) != 0 else dict[i]) + 'x^' + str(i)
+        if i == 1:
+                result = result + str(abs(dict[i]) if list_keys.index(i) != 0 else dict[i]) + 'x'
+        if i == 0:
+                result = result + str(abs(dict[i]) if list_keys.index(i) != 0 else dict[i])
+        if i > list_keys[-1]:
+            if dict[list_keys[list_keys.index(i) + 1]] > 0:
+                result = result + ' + '
+            else:
+                result = result + ' - '    
+    if result[0] == '1' and result[1] == 'x':
+        result = result.replace('1x', 'x', 1)
+    return result.replace(' 1x', ' x').replace('-1x', '-x')
 
 
-file_1, file_2 = import_file('task000-polinomial_1.txt'), import_file('task000-polinomial_2.txt')
-coeff_symbol(file_1)
-coeff_symbol(file_2) 
-dict_1 = get_dict(file_1)
-dict_2 = get_dict(file_2)
-result_dict = summ_pol(dict_1, dict_2)
-print(f'({simple_polynomial(dict_1)}) + ({simple_polynomial(dict_2)})', end=' =')
-print(simple_polynomial(result_dict))
+first_dict = dict_from_polinomial(import_file('task000-polinomial_1.txt'))
+second_dict = dict_from_polinomial(import_file('task000-polinomial_2.txt'))
+result_dict = summ_pol(first_dict, second_dict)
+export_file(get_polinomial(result_dict))
+print(f'({get_polinomial(first_dict)}) + ({get_polinomial(second_dict)}) = {get_polinomial(result_dict)}')
