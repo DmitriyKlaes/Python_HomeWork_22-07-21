@@ -8,29 +8,19 @@
 # b) (доп) Подумайте как наделить бота ""интеллектом""
 
 
-def is_number(value):  # Определяет является ли строка числом
-    try:
-        int(value)
-        return True
-    except:
-        return False
-
-
 def correct_value(value, players, turn):
     result = input(f'{players[turn]}, твоя очередь брать конфеты: ')
-    while not is_number(result) or not (29 > int(result) > 0) or int(result) > value:
+    while not result.isdigit or not (29 > int(result) > 0) or int(result) > value:
         if value >= 28:
-            result = input(
-                f'{players[turn]}, можно вводить значения только от 1 до 28: ')
+            result = input(f'{players[turn]}, можно вводить значения только от 1 до 28: ')
         else:
-            result = input(
-                f'{players[turn]}, можно вводить значения только от 1 до {value}: ')
+            result = input(f'{players[turn]}, можно вводить значения только от 1 до {value}: ')
     return int(result)
 
 
 def player_init():
     player_1 = input('\nВведите имя первого игрока: ')
-    player_2 = input('\nВведите имя второго игрока: ')
+    player_2 = input('Введите имя второго игрока: ')
     return player_1, player_2
 
 
@@ -52,21 +42,21 @@ def game_candies(value, players):
             move = correct_value(value, players, turn)
             value -= move
             if value == 0:
-                print(f'{players[turn]} ПОБЕДИЛ!!!')
+                print(f'\n{players[turn]} ПОБЕДИЛ!!!')
                 break
-            print(f'Осталось конфет: {value}')
+            print(f'\nОсталось конфет: {value}\n')
             turn = 2
         if turn == 2:
             move = correct_value(value, players, turn)
             value -= move
             if value == 0:
-                print(f'{players[turn]} ПОБЕДИЛ!!!')
+                print(f'\n{players[turn]} ПОБЕДИЛ!!!')
                 break
-            print(f'Осталось конфет: {value}')
+            print(f'\nОсталось конфет: {value}\n')
             turn = 1
 
 
-count_candies = 2021
+count_candies = 100
 print('___ИГРА В КОНФЕТЫ___')
 print('Брать со стола можно от 1 до 28 конфет за раз')
 print('Кто последний делает ход - тот победил!')
