@@ -3,7 +3,7 @@
     
     
 def import_file(name):
-    with open(name, 'r') as file_1:
+    with open(name, 'r', encoding='utf8') as file_1:
         polinomial = [i for i in file_1.read().replace('^', '').split()]
         count = 0
         for i in polinomial:
@@ -18,7 +18,7 @@ def import_file(name):
     
     
 def export_file(pol):
-    with open('task000-polinomial_sum.txt', 'w') as file:
+    with open('task000-polinomial_sum.txt', 'w', encoding='utf8') as file:
         file.write(pol)
 
 
